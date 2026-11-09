@@ -1,288 +1,226 @@
-
 <?php
-// Escape output safely
-function e($value) {
-    return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
-}
+$pageTitle = 'Dashboard';
+$pageHeading = 'Dashboard';
+$pageSubtitle = 'Overview of your student directory & quick actions';
+$activeNav = 'dashboard';
+
+require __DIR__ . '/../layouts/app_header.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Dashboard - Student Management System</title>
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
-
-    <style>
-
-        body {
-            background: #f5f7fb;
-        }
-
-        .sidebar {
-            min-height: 100vh;
-            background: #172554;
-            color: white;
-        }
-
-        .sidebar a {
-            display: block;
-            color: #cbd5e1;
-            text-decoration: none;
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
-
-        .sidebar a:hover,
-        .sidebar a.active {
-            background: #2563eb;
-            color: white;
-        }
-
-        .stat-card {
-            border: none;
-            border-radius: 12px;
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-    </style>
-
-</head>
-
-<body>
-
-<div class="container-fluid">
-
-    <div class="row">
-
-        <!-- Sidebar -->
-        <aside class="col-md-3 col-lg-2 sidebar p-4">
-
-            <h4 class="mb-4">Student MS</h4>
-
-            <a href="<?= BASE_PATH ?>/dashboard"
-               class="active">
-                Dashboard
-            </a>
-
-            <a href="<?= BASE_PATH ?>/students">
-                Students
-            </a>
-
-            <hr>
-
-            <form action="<?= BASE_PATH ?>/logout"
-                  method="POST">
-
-                <input
-                    type="hidden"
-                    name="csrf_token"
-                    value="<?= e($_SESSION['csrf_token']) ?>"
-                >
-
-                <button
-                    type="submit"
-                    class="btn btn-outline-light w-100">
-                    Logout
-                </button>
-
-            </form>
-
-        </aside>
-
-
-        <!-- Main Content -->
-        <main class="col-md-9 col-lg-10 content">
-
-            <!-- Welcome Section -->
-            <div class="mb-4">
-
-                <h2>
-                    Welcome, <?= e($userName) ?>!
-                </h2>
-
-                <p class="text-muted">
-                    Here's your student management overview.
-                </p>
-
+<!-- Welcome Banner -->
+<div class="welcome-banner mb-4">
+    <div class="row align-items-center g-3 position-relative" style="z-index: 1;">
+        <div class="col-lg-8">
+            <span class="badge bg-white bg-opacity-25 text-white mb-2 px-3 py-1.5 rounded-pill fw-semibold">
+                <i class="bi bi-sparkles me-1"></i> Workspace Overview
+            </span>
+            <h2 class="fw-bold mb-1">Welcome back, <?= e($userName) ?>!</h2>
+            <p class="mb-0 text-white-50">
+                Manage student enrollment, update records, or review your profile security from one place.
+            </p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <div class="d-flex gap-2 justify-content-lg-end flex-wrap">
+                <a href="<?= BASE_PATH ?>/students/create" class="btn btn-light text-primary fw-bold">
+                    <i class="bi bi-person-plus-fill me-1"></i> Add Student
+                </a>
+                <a href="<?= BASE_PATH ?>/profile" class="btn btn-outline-light">
+                    <i class="bi bi-person-circle me-1"></i> My Profile
+                </a>
             </div>
-
-
-            <!-- Statistics Cards -->
-            <div class="row g-4">
-
-                <div class="col-md-6 col-xl-4">
-
-                    <div class="card stat-card shadow-sm p-3">
-
-                        <div class="card-body">
-
-                            <h6 class="text-muted">
-                                Total Students
-                            </h6>
-
-                            <h2 class="fw-bold">
-                                <?= e($totalStudents) ?>
-                            </h2>
-
-                            <p class="text-muted mb-0">
-                                Students registered in your system
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="col-md-6 col-xl-4">
-
-                    <div class="card stat-card shadow-sm p-3">
-
-                        <div class="card-body">
-
-                            <h6 class="text-muted">
-                                Recent Records
-                            </h6>
-
-                            <h2 class="fw-bold">
-                                <?= count($recentStudents) ?>
-                            </h2>
-
-                            <p class="text-muted mb-0">
-                                Latest student records
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- Quick Actions -->
-            <div class="mt-5">
-
-                <h4>Quick Actions</h4>
-
-                <div class="d-flex gap-3 mt-3 flex-wrap">
-
-                    <a href="<?= BASE_PATH ?>/students/create"
-                       class="btn btn-primary">
-                        Add Student
-                    </a>
-
-                    <a href="<?= BASE_PATH ?>/students"
-                       class="btn btn-outline-primary">
-                        View Students
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <!-- Recent Students -->
-            <div class="mt-5">
-
-                <h4>Recently Added Students</h4>
-
-                <div class="card shadow-sm border-0 mt-3">
-
-                    <div class="card-body">
-
-                        <div class="table-responsive">
-
-                            <table class="table table-hover">
-
-                                <thead>
-
-                                    <tr>
-                                        <th>Roll Number</th>
-                                        <th>Name</th>
-                                        <th>Course</th>
-                                        <th>Year</th>
-                                    </tr>
-
-                                </thead>
-
-                                <tbody>
-
-                                <?php if (!empty($recentStudents)): ?>
-
-                                    <?php foreach ($recentStudents as $student): ?>
-
-                                        <tr>
-
-                                            <td>
-                                                <?= e($student['roll_number']) ?>
-                                            </td>
-
-                                            <td>
-                                                <?= e($student['first_name'] . ' ' . $student['last_name']) ?>
-                                            </td>
-
-                                            <td>
-                                                <?= e($student['course']) ?>
-                                            </td>
-
-                                            <td>
-                                                <?= e($student['year']) ?>
-                                            </td>
-
-                                        </tr>
-
-                                    <?php endforeach; ?>
-
-                                <?php else: ?>
-
-                                    <tr>
-
-                                        <td colspan="4"
-                                            class="text-center text-muted py-4">
-
-                                            No student records available yet.
-
-                                        </td>
-
-                                    </tr>
-
-                                <?php endif; ?>
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </main>
-
+        </div>
     </div>
-
 </div>
 
-</body>
-</html>
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-4">
+        <div class="stat-card d-flex align-items-center justify-content-between gap-3">
+            <div>
+                <div class="stat-label">Total Students</div>
+                <div class="stat-value"><?= e($totalStudents) ?></div>
+                <div class="small text-muted mt-1">Active records in your directory</div>
+            </div>
+            <div class="stat-icon stat-icon-blue">
+                <i class="bi bi-people-fill"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4">
+        <div class="stat-card d-flex align-items-center justify-content-between gap-3">
+            <div>
+                <div class="stat-label">Recent Additions</div>
+                <div class="stat-value"><?= count($recentStudents) ?></div>
+                <div class="small text-muted mt-1">Latest student entries shown below</div>
+            </div>
+            <div class="stat-icon stat-icon-emerald">
+                <i class="bi bi-clock-history"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12 col-xl-4">
+        <div class="stat-card d-flex align-items-center justify-content-between gap-3">
+            <div class="min-width-0">
+                <div class="stat-label">Account &amp; Security</div>
+                <div class="fw-bold fs-6 text-truncate"><?= e($userName) ?></div>
+                <div class="small text-muted text-truncate mb-2">
+                    <?= e($_SESSION['user_email'] ?? '') ?>
+                </div>
+                <a href="<?= BASE_PATH ?>/profile" class="small fw-semibold text-decoration-none">
+                    View My Profile &amp; Security <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            <div class="stat-icon stat-icon-indigo">
+                <i class="bi bi-shield-lock-fill"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="fw-bold mb-0">Quick Actions</h5>
+        <span class="small text-muted">Student &amp; account shortcuts</span>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-sm-6 col-xl-3">
+            <a href="<?= BASE_PATH ?>/students/create" class="quick-action-tile">
+                <span class="quick-action-icon stat-icon-blue">
+                    <i class="bi bi-person-plus-fill"></i>
+                </span>
+                <div>
+                    <div class="fw-bold">Add Student</div>
+                    <div class="small text-muted">Enroll a new student</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <a href="<?= BASE_PATH ?>/students?action=edit" class="quick-action-tile">
+                <span class="quick-action-icon stat-icon-amber">
+                    <i class="bi bi-pencil-square"></i>
+                </span>
+                <div>
+                    <div class="fw-bold">Update Student</div>
+                    <div class="small text-muted">Modify student info</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <a href="<?= BASE_PATH ?>/students?action=delete" class="quick-action-tile">
+                <span class="quick-action-icon bg-danger-subtle text-danger">
+                    <i class="bi bi-trash3-fill"></i>
+                </span>
+                <div>
+                    <div class="fw-bold">Delete Student</div>
+                    <div class="small text-muted">Remove student record</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <a href="<?= BASE_PATH ?>/profile" class="quick-action-tile">
+                <span class="quick-action-icon stat-icon-indigo">
+                    <i class="bi bi-person-circle"></i>
+                </span>
+                <div>
+                    <div class="fw-bold">My Profile</div>
+                    <div class="small text-muted">Profile &amp; password update</div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Students Table -->
+<div class="sms-card">
+    <div class="sms-card-header">
+        <div>
+            <h5 class="fw-bold mb-0">Recently Added Students</h5>
+            <div class="small text-muted">Your 5 most recent student entries</div>
+        </div>
+        <a href="<?= BASE_PATH ?>/students" class="btn btn-outline-primary btn-sm">
+            View All Students <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+    </div>
+
+    <?php if (!empty($recentStudents)): ?>
+        <div class="table-responsive">
+            <table class="table sms-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Roll Number</th>
+                        <th>Student Name</th>
+                        <th>Course</th>
+                        <th>Academic Year</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($recentStudents as $student): ?>
+                        <?php $fullName = trim($student['first_name'] . ' ' . $student['last_name']); ?>
+                        <tr>
+                            <td>
+                                <span class="roll-badge"><?= e($student['roll_number']) ?></span>
+                            </td>
+                            <td>
+                                <div class="student-name-cell">
+                                    <span class="student-mini-avatar"><?= e(userInitials($fullName)) ?></span>
+                                    <span class="fw-semibold"><?= e($fullName) ?></span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="course-badge"><?= e($student['course']) ?></span>
+                            </td>
+                            <td>
+                                <span class="year-badge"><?= e($student['year']) ?></span>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-1">
+                                    <a href="<?= BASE_PATH ?>/students/show?id=<?= (int)$student['id'] ?>"
+                                       class="btn btn-sm btn-light border"
+                                       title="View Details">
+                                        <i class="bi bi-eye text-primary"></i>
+                                    </a>
+                                    <a href="<?= BASE_PATH ?>/students/edit?id=<?= (int)$student['id'] ?>"
+                                       class="btn btn-sm btn-light border"
+                                       title="Edit Student">
+                                        <i class="bi bi-pencil text-warning"></i>
+                                    </a>
+                                    <button type="button"
+                                            class="btn btn-sm btn-light border js-delete-student-btn"
+                                            data-student-id="<?= (int)$student['id'] ?>"
+                                            data-student-name="<?= e($fullName) ?>"
+                                            data-student-roll="<?= e($student['roll_number']) ?>"
+                                            title="Delete Student">
+                                        <i class="bi bi-trash text-danger"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php else: ?>
+        <div class="text-center py-5 px-3">
+            <div class="stat-icon stat-icon-blue mx-auto mb-3" style="width: 56px; height: 56px;">
+                <i class="bi bi-journal-plus fs-4"></i>
+            </div>
+            <h6 class="fw-bold mb-1">No student records yet</h6>
+            <p class="text-muted small mb-3">
+                Get started by adding your first student to the system.
+            </p>
+            <a href="<?= BASE_PATH ?>/students/create" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> Add Your First Student
+            </a>
+        </div>
+    <?php endif; ?>
+</div>
+
+<?php require __DIR__ . '/../layouts/app_footer.php'; ?>

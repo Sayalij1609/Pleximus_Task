@@ -32,3 +32,7 @@ $router->post('/students/update', [StudentController::class, 'update']);
 
 // Delete Student 
 $router->post('/students/delete', [StudentController::class, 'destroy']);
+
+// User Profile routes
+$router->get('/profile', [ProfileController::class, 'index']);
+$router->post('/profile/password', [ProfileController::class, 'updatePassword']);

@@ -1,191 +1,231 @@
-
 <?php
-function editEscape($value)
-{
-    return htmlspecialchars(
-        (string)($value ?? ''),
-        ENT_QUOTES,
-        'UTF-8'
-    );
-}
+$errors = $errors ?? [];
+$submittedData = $data ?? null;
+
+$fieldValue = function ($key) use ($submittedData, $student) {
+    if (is_array($submittedData) && array_key_exists($key, $submittedData)) {
+        return $submittedData[$key];
+    }
+    return $student[$key] ?? '';
+};
+
+$studentFullName = trim(($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? ''));
+
+$pageTitle = 'Update Student';
+$pageHeading = 'Update Student Details';
+$pageSubtitle = 'Editing record for ' . $studentFullName;
+$activeNav = 'students_edit';
+
+require __DIR__ . '/../layouts/app_header.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="mx-auto" style="max-width: 920px;">
+    <?php if (!empty($errors['general'])): ?>
+        <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <div><?= e($errors['general']) ?></div>
+        </div>
+    <?php endif; ?>
 
-    <title>Update Student</title>
+    <div class="sms-card">
+        <div class="sms-card-header">
+            <div class="d-flex align-items-center gap-2">
+                <span class="stat-icon stat-icon-amber" style="width: 38px; height: 38px; font-size: 1.05rem;">
+                    <i class="bi bi-pencil-square"></i>
+                </span>
+                <div>
+                    <h5 class="fw-bold mb-0"><?= e($studentFullName) ?></h5>
+                    <div class="small text-muted">
+                        Roll Number: <strong><?= e($student['roll_number']) ?></strong>
+                    </div>
+                </div>
+            </div>
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
-</head>
-
-<body class="bg-light">
-
-<div class="container py-5">
-
-    <div class="card shadow-sm mx-auto" style="max-width: 850px;">
-
-        <div class="card-header bg-warning">
-            <h4 class="mb-0">Update Student Details</h4>
+            <div class="d-flex gap-2">
+                <a href="<?= BASE_PATH ?>/students/show?id=<?= (int)$student['id'] ?>" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-eye me-1"></i> View Details
+                </a>
+                <a href="<?= BASE_PATH ?>/students" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> All Students
+                </a>
+            </div>
         </div>
 
-        <div class="card-body p-4">
-
-            <?php if (!empty($errors['general'])): ?>
-                <div class="alert alert-danger">
-                    <?= editEscape($errors['general']) ?>
-                </div>
-            <?php endif; ?>
-
+        <div class="sms-card-body">
             <form action="<?= BASE_PATH ?>/students/update" method="POST">
+                <input type="hidden" name="id" value="<?= (int)$student['id'] ?>">
+                <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
 
-                <input type="hidden" name="id"
-                       value="<?= (int)$student['id'] ?>">
-
-                <input type="hidden" name="csrf_token"
-                       value="<?= editEscape($csrfToken) ?>">
-
-                <h5 class="mb-3">Personal Information</h5>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Roll Number *</label>
-                        <input type="text" name="roll_number"
-                               class="form-control"
-                               value="<?= editEscape($student['roll_number']) ?>"
-                               required>
-                        <small class="text-danger">
-                            <?= editEscape($errors['roll_number'] ?? '') ?>
-                        </small>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">First Name *</label>
-                        <input type="text" name="first_name"
-                               class="form-control"
-                               value="<?= editEscape($student['first_name']) ?>"
-                               required>
-                        <small class="text-danger">
-                            <?= editEscape($errors['first_name'] ?? '') ?>
-                        </small>
-                    </div>
+                <div class="form-section-title">
+                    <i class="bi bi-person-vcard text-warning"></i>
+                    <span>Personal &amp; Contact Information</span>
                 </div>
 
-                <div class="row mb-3">
+                <div class="row g-3 mb-4">
                     <div class="col-md-6">
-                        <label class="form-label">Last Name *</label>
-                        <input type="text" name="last_name"
-                               class="form-control"
-                               value="<?= editEscape($student['last_name']) ?>"
-                               required>
-                        <small class="text-danger">
-                            <?= editEscape($errors['last_name'] ?? '') ?>
-                        </small>
+                        <label for="roll_number" class="form-label">Roll Number *</label>
+                        <input
+                            type="text"
+                            id="roll_number"
+                            name="roll_number"
+                            class="form-control <?= !empty($errors['roll_number']) ? 'is-invalid' : '' ?>"
+                            value="<?= e($fieldValue('roll_number')) ?>"
+                            required
+                        >
+                        <?php if (!empty($errors['roll_number'])): ?>
+                            <div class="invalid-feedback"><?= e($errors['roll_number']) ?></div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Date of Birth</label>
-                        <input type="date" name="date_of_birth"
-                               class="form-control"
-                               value="<?= editEscape($student['date_of_birth']) ?>">
-                        <small class="text-danger">
-                            <?= editEscape($errors['date_of_birth'] ?? '') ?>
-                        </small>
+                        <label for="date_of_birth" class="form-label">Date of Birth</label>
+                        <input
+                            type="date"
+                            id="date_of_birth"
+                            name="date_of_birth"
+                            class="form-control <?= !empty($errors['date_of_birth']) ? 'is-invalid' : '' ?>"
+                            value="<?= e($fieldValue('date_of_birth')) ?>"
+                        >
+                        <?php if (!empty($errors['date_of_birth'])): ?>
+                            <div class="invalid-feedback"><?= e($errors['date_of_birth']) ?></div>
+                        <?php endif; ?>
                     </div>
-                </div>
 
-                <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label">Gender</label>
-                        <select name="gender" class="form-select">
+                        <label for="first_name" class="form-label">First Name *</label>
+                        <input
+                            type="text"
+                            id="first_name"
+                            name="first_name"
+                            class="form-control <?= !empty($errors['first_name']) ? 'is-invalid' : '' ?>"
+                            value="<?= e($fieldValue('first_name')) ?>"
+                            required
+                        >
+                        <?php if (!empty($errors['first_name'])): ?>
+                            <div class="invalid-feedback"><?= e($errors['first_name']) ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="last_name" class="form-label">Last Name *</label>
+                        <input
+                            type="text"
+                            id="last_name"
+                            name="last_name"
+                            class="form-control <?= !empty($errors['last_name']) ? 'is-invalid' : '' ?>"
+                            value="<?= e($fieldValue('last_name')) ?>"
+                            required
+                        >
+                        <?php if (!empty($errors['last_name'])): ?>
+                            <div class="invalid-feedback"><?= e($errors['last_name']) ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="gender" class="form-label">Gender</label>
+                        <select
+                            id="gender"
+                            name="gender"
+                            class="form-select <?= !empty($errors['gender']) ? 'is-invalid' : '' ?>"
+                        >
                             <option value="">Select Gender</option>
-
+                            <?php $currentGender = $fieldValue('gender'); ?>
                             <?php foreach (['Male', 'Female', 'Other'] as $gender): ?>
-                                <option value="<?= $gender ?>"
-                                    <?= ($student['gender'] ?? '') === $gender
-                                        ? 'selected' : '' ?>>
+                                <option value="<?= $gender ?>" <?= $currentGender === $gender ? 'selected' : '' ?>>
                                     <?= $gender ?>
                                 </option>
                             <?php endforeach; ?>
-
                         </select>
-                        <small class="text-danger">
-                            <?= editEscape($errors['gender'] ?? '') ?>
-                        </small>
+                        <?php if (!empty($errors['gender'])): ?>
+                            <div class="invalid-feedback"><?= e($errors['gender']) ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            class="form-control <?= !empty($errors['email']) ? 'is-invalid' : '' ?>"
+                            value="<?= e($fieldValue('email')) ?>"
+                        >
+                        <?php if (!empty($errors['email'])): ?>
+                            <div class="invalid-feedback"><?= e($errors['email']) ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input
+                            type="text"
+                            id="phone"
+                            name="phone"
+                            class="form-control"
+                            value="<?= e($fieldValue('phone')) ?>"
+                        >
+                    </div>
+                </div>
+
+                <div class="form-section-title">
+                    <i class="bi bi-book text-warning"></i>
+                    <span>Academic &amp; Address Information</span>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label for="course" class="form-label">Course *</label>
+                        <input
+                            type="text"
+                            id="course"
+                            name="course"
+                            class="form-control <?= !empty($errors['course']) ? 'is-invalid' : '' ?>"
+                            value="<?= e($fieldValue('course')) ?>"
+                            required
+                        >
+                        <?php if (!empty($errors['course'])): ?>
+                            <div class="invalid-feedback"><?= e($errors['course']) ?></div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Email</label>
-                        <input type="email" name="email"
-                               class="form-control"
-                               value="<?= editEscape($student['email']) ?>">
-                        <small class="text-danger">
-                            <?= editEscape($errors['email'] ?? '') ?>
-                        </small>
+                        <label for="year" class="form-label">Academic Year *</label>
+                        <input
+                            type="text"
+                            id="year"
+                            name="year"
+                            class="form-control <?= !empty($errors['year']) ? 'is-invalid' : '' ?>"
+                            value="<?= e($fieldValue('year')) ?>"
+                            required
+                        >
+                        <?php if (!empty($errors['year'])): ?>
+                            <div class="invalid-feedback"><?= e($errors['year']) ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea
+                            id="address"
+                            name="address"
+                            class="form-control"
+                            rows="3"
+                        ><?= e($fieldValue('address')) ?></textarea>
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Phone Number</label>
-                    <input type="text" name="phone"
-                           class="form-control"
-                           value="<?= editEscape($student['phone']) ?>">
+                <div class="d-flex align-items-center justify-content-end gap-2 pt-2 border-top">
+                    <a href="<?= BASE_PATH ?>/students" class="btn btn-light border">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-warning d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-check2-circle"></i>
+                        <span>Update Student</span>
+                    </button>
                 </div>
-
-                <hr>
-
-                <h5 class="mb-3">Academic Information</h5>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Course *</label>
-                        <input type="text" name="course"
-                               class="form-control"
-                               value="<?= editEscape($student['course']) ?>"
-                               required>
-                        <small class="text-danger">
-                            <?= editEscape($errors['course'] ?? '') ?>
-                        </small>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Academic Year *</label>
-                        <input type="text" name="year"
-                               class="form-control"
-                               value="<?= editEscape($student['year']) ?>"
-                               required>
-                        <small class="text-danger">
-                            <?= editEscape($errors['year'] ?? '') ?>
-                        </small>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label">Address</label>
-                    <textarea name="address" class="form-control"
-                              rows="3"><?= editEscape($student['address']) ?></textarea>
-                </div>
-
-                <button type="submit" class="btn btn-warning">
-                    Update Student
-                </button>
-
-                <a href="<?= BASE_PATH ?>/students"
-                   class="btn btn-secondary">
-                    Cancel
-                </a>
-
             </form>
-
         </div>
     </div>
-
 </div>
 
-</body>
-</html>
+<?php require __DIR__ . '/../layouts/app_footer.php'; ?>

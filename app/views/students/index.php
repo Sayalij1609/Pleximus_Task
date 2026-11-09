@@ -1,300 +1,263 @@
-
 <?php
-function studentListEscape($value)
-{
-    return htmlspecialchars(
-        (string)($value ?? ''),
-        ENT_QUOTES,
-        'UTF-8'
-    );
+$actionMode = in_array($_GET['action'] ?? '', ['edit', 'delete'], true) ? $_GET['action'] : '';
+
+if ($actionMode === 'edit') {
+    $pageTitle = 'Update Student';
+    $pageHeading = 'Update Student';
+    $pageSubtitle = 'Select a student from the list below to edit their details';
+    $activeNav = 'students_edit';
+} elseif ($actionMode === 'delete') {
+    $pageTitle = 'Delete Student';
+    $pageHeading = 'Delete Student';
+    $pageSubtitle = 'Select a student from the list below to remove their record';
+    $activeNav = 'students_delete';
+} else {
+    $pageTitle = 'All Students';
+    $pageHeading = 'All Students';
+    $pageSubtitle = 'Browse, search, and manage student records';
+    $activeNav = 'students_index';
 }
+
+require __DIR__ . '/../layouts/app_header.php';
+
+$buildPageQuery = function ($targetPage) use ($search, $actionMode) {
+    $params = ['page' => $targetPage];
+    if ($search !== '') {
+        $params['search'] = $search;
+    }
+    if ($actionMode !== '') {
+        $params['action'] = $actionMode;
+    }
+    return http_build_query($params);
+};
+
+$startRecord = $totalStudents > 0 ? ($offset + 1) : 0;
+$endRecord = min($offset + count($students), $totalStudents);
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
+<?php if ($actionMode === 'edit'): ?>
+    <div class="mode-banner mode-banner-edit mb-4">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-pencil-square fs-5"></i>
+            <div>
+                <strong>Update Student Mode:</strong>
+                Search or browse below and click <strong>Edit</strong> on the student you want to update.
+            </div>
+        </div>
+        <a href="<?= BASE_PATH ?>/students" class="btn btn-sm btn-outline-dark">
+            Show Standard View
+        </a>
+    </div>
+<?php elseif ($actionMode === 'delete'): ?>
+    <div class="mode-banner mode-banner-delete mb-4">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-trash3-fill fs-5"></i>
+            <div>
+                <strong>Delete Student Mode:</strong>
+                Select a student below and click <strong>Delete</strong> to remove their record (confirmation required).
+            </div>
+        </div>
+        <a href="<?= BASE_PATH ?>/students" class="btn btn-sm btn-outline-danger">
+            Show Standard View
+        </a>
+    </div>
+<?php endif; ?>
 
-<head>
-    <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>All Students</title>
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
-</head>
-
-<body class="bg-light">
-
-<div class="container py-5">
-
-    <!-- Page Heading -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-
+<div class="sms-card">
+    <div class="sms-card-header">
         <div>
-            <h2>All Students</h2>
-            <p class="text-muted mb-0">
-                Manage your student records.
-            </p>
+            <h5 class="fw-bold mb-0">Student Directory</h5>
+            <div class="small text-muted">
+                <?php if ($totalStudents > 0): ?>
+                    Showing <strong><?= (int)$startRecord ?>&ndash;<?= (int)$endRecord ?></strong> of <strong><?= (int)$totalStudents ?></strong> matching student<?= $totalStudents === 1 ? '' : 's' ?>
+                <?php else: ?>
+                    0 matching students
+                <?php endif; ?>
+            </div>
         </div>
 
-        <a href="<?= BASE_PATH ?>/students/create"
-           class="btn btn-primary">
-            + Add Student
-        </a>
-
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="<?= BASE_PATH ?>/students/create" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1">
+                <i class="bi bi-plus-lg"></i>
+                <span>Add Student</span>
+            </a>
+            <a href="<?= BASE_PATH ?>/dashboard" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Dashboard
+            </a>
+        </div>
     </div>
 
+    <div class="sms-card-body">
+        <!-- Search Form -->
+        <form method="GET" action="<?= BASE_PATH ?>/students" class="row g-2 align-items-center mb-4">
+            <?php if ($actionMode !== ''): ?>
+                <input type="hidden" name="action" value="<?= e($actionMode) ?>">
+            <?php endif; ?>
 
-    <div class="card shadow-sm">
-
-        <div class="card-body">
-
-            <!-- Search Form -->
-            <form method="GET"
-                  action="<?= BASE_PATH ?>/students"
-                  class="row g-2 mb-4">
-
-                <div class="col-md-8">
-
+            <div class="col-md-8 col-lg-9">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted" style="border-radius: 10px 0 0 10px;">
+                        <i class="bi bi-search"></i>
+                    </span>
                     <input
                         type="text"
                         name="search"
-                        class="form-control"
-                        placeholder="Search by roll number, name, email or course..."
-                        value="<?= studentListEscape($search) ?>"
+                        class="form-control border-start-0 ps-1"
+                        style="border-radius: 0 10px 10px 0;"
+                        placeholder="Search by roll number, name, email, or course..."
+                        value="<?= e($search) ?>"
                     >
-
                 </div>
-
-                <div class="col-md-4">
-
-                    <button type="submit"
-                            class="btn btn-primary">
-                        Search
-                    </button>
-
-                    <a href="<?= BASE_PATH ?>/students"
-                       class="btn btn-secondary">
-                        Reset
-                    </a>
-
-                </div>
-
-            </form>
-
-
-            <!-- Student Count -->
-            <div class="mb-3">
-
-                <strong>Total matching students:</strong>
-                <?= (int)$totalStudents ?>
-
             </div>
 
+            <div class="col-md-4 col-lg-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    Search
+                </button>
+                <a href="<?= BASE_PATH ?>/students<?= $actionMode !== '' ? '?action=' . e($actionMode) : '' ?>"
+                   class="btn btn-light border">
+                    Reset
+                </a>
+            </div>
+        </form>
 
-            <!-- Student Table -->
-            <?php if (empty($students)): ?>
-
-                <div class="text-center py-5">
-
-                    <h5>No students found</h5>
-
-                    <p class="text-muted">
-                        Try another search or add a new student.
-                    </p>
-
-                    <a href="<?= BASE_PATH ?>/students/create"
-                       class="btn btn-primary">
-                        Add Student
+        <!-- Student Table / Empty State -->
+        <?php if (empty($students)): ?>
+            <div class="text-center py-5 px-3 bg-light rounded-4 border border-dashed">
+                <div class="stat-icon stat-icon-blue mx-auto mb-3" style="width: 56px; height: 56px;">
+                    <i class="bi bi-search fs-4"></i>
+                </div>
+                <h5 class="fw-bold mb-1">No students found</h5>
+                <p class="text-muted small mb-3">
+                    <?= $search !== '' ? 'No records matched "' . e($search) . '". Try clearing your search filter.' : 'Your student directory is currently empty.' ?>
+                </p>
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <?php if ($search !== ''): ?>
+                        <a href="<?= BASE_PATH ?>/students<?= $actionMode !== '' ? '?action=' . e($actionMode) : '' ?>"
+                           class="btn btn-outline-secondary btn-sm">
+                            Clear Search
+                        </a>
+                    <?php endif; ?>
+                    <a href="<?= BASE_PATH ?>/students/create" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-lg me-1"></i> Add Student
                     </a>
-
                 </div>
-
-            <?php else: ?>
-
-                <div class="table-responsive">
-
-                    <table class="table table-bordered table-hover align-middle">
-
-                        <thead class="table-dark">
-
+            </div>
+        <?php else: ?>
+            <div class="table-responsive border rounded-3">
+                <table class="table sms-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Roll Number</th>
+                            <th>Student Name</th>
+                            <th>Contact</th>
+                            <th>Course</th>
+                            <th>Year</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($students as $student): ?>
+                            <?php $fullName = trim($student['first_name'] . ' ' . $student['last_name']); ?>
                             <tr>
-                                <th>Roll Number</th>
-                                <th>Student Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Course</th>
-                                <th>Year</th>
-                                <th>Actions</th>
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            <?php foreach ($students as $student): ?>
-
-                                <tr>
-
-                                    <td>
-                                        <?= studentListEscape($student['roll_number']) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= studentListEscape(
-                                            $student['first_name'] . ' ' .
-                                            $student['last_name']
-                                        ) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= studentListEscape($student['email']) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= studentListEscape($student['phone']) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= studentListEscape($student['course']) ?>
-                                    </td>
-
-                                    <td>
-                                        <?= studentListEscape($student['year']) ?>
-                                    </td>
-
-                                    <td>
-
-                                        <div class="d-flex gap-2">
-
-                                            <a
-                                                href="<?= BASE_PATH ?>/students/show?id=<?= (int)$student['id'] ?>"
-                                                class="btn btn-sm btn-info text-white"
-                                            >
-                                                View
-                                            </a>
-
-                                            <a
-                                                href="<?= BASE_PATH ?>/students/edit?id=<?= (int)$student['id'] ?>"
-                                                class="btn btn-sm btn-warning"
-                                            >
-                                                Edit
-                                            </a>
-
-                                            <form
-                                                action="<?= BASE_PATH ?>/students/delete"
-                                                method="POST"
-                                                onsubmit="return confirm('Are you sure you want to delete this student?');"
-                                            >
-
-                                                <input
-                                                    type="hidden"
-                                                    name="id"
-                                                    value="<?= (int)$student['id'] ?>"
-                                                >
-
-                                                <input
-                                                    type="hidden"
-                                                    name="csrf_token"
-                                                    value="<?= studentListEscape($csrfToken) ?>"
-                                                >
-
-                                                <button
-                                                    type="submit"
-                                                    class="btn btn-sm btn-danger"
-                                                >
-                                                    Delete
-                                                </button>
-
-                                            </form>
-
+                                <td>
+                                    <span class="roll-badge"><?= e($student['roll_number']) ?></span>
+                                </td>
+                                <td>
+                                    <div class="student-name-cell">
+                                        <span class="student-mini-avatar"><?= e(userInitials($fullName)) ?></span>
+                                        <div>
+                                            <div class="fw-semibold text-dark"><?= e($fullName) ?></div>
+                                            <?php if (!empty($student['gender'])): ?>
+                                                <div class="small text-muted"><?= e($student['gender']) ?></div>
+                                            <?php endif; ?>
                                         </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="small">
+                                        <?php if (!empty($student['email'])): ?>
+                                            <div class="text-dark"><i class="bi bi-envelope text-muted me-1"></i><?= e($student['email']) ?></div>
+                                        <?php endif; ?>
+                                        <?php if (!empty($student['phone'])): ?>
+                                            <div class="text-muted"><i class="bi bi-telephone text-muted me-1"></i><?= e($student['phone']) ?></div>
+                                        <?php endif; ?>
+                                        <?php if (empty($student['email']) && empty($student['phone'])): ?>
+                                            <span class="text-muted">&mdash;</span>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="course-badge"><?= e($student['course']) ?></span>
+                                </td>
+                                <td>
+                                    <span class="year-badge"><?= e($student['year']) ?></span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex gap-1 align-items-center">
+                                        <a href="<?= BASE_PATH ?>/students/show?id=<?= (int)$student['id'] ?>"
+                                           class="btn btn-sm btn-light border d-inline-flex align-items-center gap-1"
+                                           title="View Student Details">
+                                            <i class="bi bi-eye text-primary"></i>
+                                            <span class="d-none d-xl-inline">View</span>
+                                        </a>
 
-                                    </td>
+                                        <a href="<?= BASE_PATH ?>/students/edit?id=<?= (int)$student['id'] ?>"
+                                           class="btn btn-sm <?= $actionMode === 'edit' ? 'btn-warning btn-focus-ring-edit' : 'btn-light border' ?> d-inline-flex align-items-center gap-1"
+                                           title="Update Student">
+                                            <i class="bi bi-pencil-square <?= $actionMode === 'edit' ? '' : 'text-warning' ?>"></i>
+                                            <span>Edit</span>
+                                        </a>
 
-                                </tr>
+                                        <button type="button"
+                                                class="btn btn-sm <?= $actionMode === 'delete' ? 'btn-danger btn-focus-ring-delete' : 'btn-light border' ?> js-delete-student-btn d-inline-flex align-items-center gap-1"
+                                                data-student-id="<?= (int)$student['id'] ?>"
+                                                data-student-name="<?= e($fullName) ?>"
+                                                data-student-roll="<?= e($student['roll_number']) ?>"
+                                                title="Delete Student">
+                                            <i class="bi bi-trash3 <?= $actionMode === 'delete' ? '' : 'text-danger' ?>"></i>
+                                            <span class="<?= $actionMode === 'delete' ? '' : 'd-none d-xl-inline text-danger' ?>">Delete</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
 
-                            <?php endforeach; ?>
+            <!-- Pagination -->
+            <?php if ($totalPages > 1): ?>
+                <nav aria-label="Student pagination" class="mt-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="small text-muted">
+                        Page <strong><?= (int)$page ?></strong> of <strong><?= (int)$totalPages ?></strong>
+                    </div>
 
-                        </tbody>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
+                            <a class="page-link" href="<?= BASE_PATH ?>/students?<?= e($buildPageQuery(max(1, $page - 1))) ?>">
+                                <i class="bi bi-chevron-left"></i> Previous
+                            </a>
+                        </li>
 
-                    </table>
-
-                </div>
-
-
-                <!-- Pagination -->
-                <?php if ($totalPages > 1): ?>
-
-                    <nav aria-label="Student pagination">
-
-                        <ul class="pagination justify-content-center">
-
-                            <!-- Previous -->
-                            <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-
-                                <a
-                                    class="page-link"
-                                    href="<?= BASE_PATH ?>/students?<?= http_build_query(['search' => $search, 'page' => max(1, $page - 1)]) ?>"
-                                >
-                                    Previous
+                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                            <li class="page-item <?= $page == $i ? 'active' : '' ?>">
+                                <a class="page-link" href="<?= BASE_PATH ?>/students?<?= e($buildPageQuery($i)) ?>">
+                                    <?= $i ?>
                                 </a>
-
                             </li>
+                        <?php endfor; ?>
 
-
-                            <!-- Page Numbers -->
-                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-
-                                <li class="page-item <?= $page == $i ? 'active' : '' ?>">
-
-                                    <a
-                                        class="page-link"
-                                        href="<?= BASE_PATH ?>/students?<?= http_build_query(['search' => $search, 'page' => $i]) ?>"
-                                    >
-                                        <?= $i ?>
-                                    </a>
-
-                                </li>
-
-                            <?php endfor; ?>
-
-
-                            <!-- Next -->
-                            <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
-
-                                <a
-                                    class="page-link"
-                                    href="<?= BASE_PATH ?>/students?<?= http_build_query(['search' => $search, 'page' => min($totalPages, $page + 1)]) ?>"
-                                >
-                                    Next
-                                </a>
-
-                            </li>
-
-                        </ul>
-
-                    </nav>
-
-                <?php endif; ?>
-
+                        <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                            <a class="page-link" href="<?= BASE_PATH ?>/students?<?= e($buildPageQuery(min($totalPages, $page + 1))) ?>">
+                                Next <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             <?php endif; ?>
-
-
-            <a href="<?= BASE_PATH ?>/dashboard"
-               class="btn btn-secondary mt-3">
-                Back to Dashboard
-            </a>
-
-        </div>
-
+        <?php endif; ?>
     </div>
-
 </div>
 
-</body>
-</html>
+<?php require __DIR__ . '/../layouts/app_footer.php'; ?>

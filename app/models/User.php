@@ -41,4 +41,34 @@ class User
             ':password' => $hashedPassword
         ]);
     }
+
+    // Find user using ID
+    public function findById($id)
+    {
+        $query = "SELECT * FROM " . $this->table .
+                 " WHERE id = :id LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->execute([
+            ':id' => $id
+        ]);
+
+        return $stmt->fetch();
+    }
+
+    // Update user password
+    public function updatePassword($id, $hashedPassword)
+    {
+        $query = "UPDATE " . $this->table .
+                 " SET password = :password
+                 WHERE id = :id";
+
+        $stmt = $this->conn->prepare($query);
+
+        return $stmt->execute([
+            ':password' => $hashedPassword,
+            ':id' => $id
+        ]);
+    }
 }
