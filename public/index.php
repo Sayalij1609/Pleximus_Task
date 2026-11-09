@@ -14,6 +14,7 @@ require_once __DIR__ . '/../core/Router.php';
 require_once __DIR__ . '/../app/controllers/HomeController.php';
 require_once __DIR__ . '/../app/controllers/AuthController.php';
 require_once __DIR__ . '/../app/controllers/DashboardController.php';
+require_once __DIR__ . '/../app/controllers/StudentController.php';
 
 // Create Router
 $router = new Router();

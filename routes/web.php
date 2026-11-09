@@ -16,3 +16,7 @@ $router->post('/logout', [AuthController::class, 'logout']);
 
 // Dashboard route
 $router->get('/dashboard', [DashboardController::class, 'index']);
+
+// Add Student
+$router->get('/students/create', [StudentController::class, 'create']);
+$router->post('/students', [StudentController::class, 'store']);
