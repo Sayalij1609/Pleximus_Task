@@ -25,3 +25,10 @@ $router->post('/students', [StudentController::class, 'store']);
 // Student routes
 $router->get('/students', [StudentController::class, 'index']);
 $router->get('/students/show', [StudentController::class, 'show']);
+
+// Update student details
+$router->get('/students/edit', [StudentController::class, 'edit']);
+$router->post('/students/update', [StudentController::class, 'update']);
+
+// Delete Student 
+$router->post('/students/delete', [StudentController::class, 'destroy']);

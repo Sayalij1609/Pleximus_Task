@@ -112,15 +112,48 @@ function studentListEscape($value)
                                     <td>
                                         <?= studentListEscape($student['year']) ?>
                                     </td>
-
                                     <td>
-                                        <a
-                                            href="<?= BASE_PATH ?>/students/show?id=<?= (int)$student['id'] ?>"
-                                            class="btn btn-sm btn-info text-white"
-                                        >
-                                            View
-                                        </a>
+                                        <div class="d-flex gap-2">
+
+                                            <a
+                                                href="<?= BASE_PATH ?>/students/show?id=<?= (int)$student['id'] ?>"
+                                                class="btn btn-sm btn-info text-white"
+                                            >
+                                                View
+                                            </a>
+
+                                            <a
+                                                href="<?= BASE_PATH ?>/students/edit?id=<?= (int)$student['id'] ?>"
+                                                class="btn btn-sm btn-warning"
+                                            >
+                                                Edit
+                                            </a>
+
+                                            <form
+                                                action="<?= BASE_PATH ?>/students/delete"
+                                                method="POST"
+                                                onsubmit="return confirm('Are you sure you want to delete this student?');"
+                                            >
+                                                <input
+                                                    type="hidden"
+                                                    name="id"
+                                                    value="<?= (int)$student['id'] ?>"
+                                                >
+
+                                                <input
+                                                    type="hidden"
+                                                    name="csrf_token"
+                                                    value="<?= studentListEscape($csrfToken) ?>"
+                                                >
+
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    Delete
+                                                </button>
+                                            </form>
+
+                                        </div>
                                     </td>
+
                                 </tr>
 
                             <?php endforeach; ?>

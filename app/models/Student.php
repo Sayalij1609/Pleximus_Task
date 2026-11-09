@@ -95,4 +95,62 @@ class Student
         return $stmt->fetch();
     }
 
+    
+    public function update($id, $userId, $data)
+    {
+        $query = "UPDATE {$this->table}
+                SET
+                    roll_number = :roll_number,
+                    first_name = :first_name,
+                    last_name = :last_name,
+                    email = :email,
+                    phone = :phone,
+                    gender = :gender,
+                    date_of_birth = :date_of_birth,
+                    course = :course,
+                    `year` = :year,
+                    address = :address,
+                    updated_at = NOW()
+                WHERE id = :id
+                AND user_id = :user_id";
+
+        $stmt = $this->conn->prepare($query);
+
+        return $stmt->execute([
+            ':roll_number' => $data['roll_number'],
+            ':first_name' => $data['first_name'],
+            ':last_name' => $data['last_name'],
+            ':email' => $data['email'],
+            ':phone' => $data['phone'],
+            ':gender' => $data['gender'],
+            ':date_of_birth' => $data['date_of_birth'],
+            ':course' => $data['course'],
+            ':year' => $data['year'],
+            ':address' => $data['address'],
+            ':id' => $id,
+            ':user_id' => $userId
+        ]);
+    }
+
+    
+    public function delete($id, $userId)
+    {
+        $query = "DELETE FROM {$this->table}
+                WHERE id = :id
+                AND user_id = :user_id";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->execute([
+            ':id' => $id,
+            ':user_id' => $userId
+        ]);
+
+        return $stmt->rowCount() > 0;
+    }
+
+
+
+
+
 }
