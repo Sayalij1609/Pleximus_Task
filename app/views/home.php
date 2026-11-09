@@ -10,18 +10,44 @@
 
 <body>
 
-    <h1>Welcome to Student Management System</h1>
+    <h1>Student Management System</h1>
 
-    <p>Your PHP MVC application is working successfully!</p>
+    <?php if (isset($_SESSION['user_id'])): ?>
 
-    <h3>Application Details</h3>
+        <h2>Welcome, <?= htmlspecialchars($_SESSION['user_name']) ?>!</h2>
 
-    <ul>
-        <li>Backend: Core PHP</li>
-        <li>Architecture: MVC</li>
-        <li>Database: MySQL</li>
-        <li>Routing: Custom PHP Router</li>
-    </ul>
+        <p>You are successfully logged in.</p>
+
+        <p>
+            Email:
+            <?= htmlspecialchars($_SESSION['user_email']) ?>
+        </p>
+
+        <form action="<?= BASE_PATH ?>/logout" method="POST">
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>"
+            >
+
+            <button type="submit">Logout</button>
+
+        </form>
+
+    <?php else: ?>
+
+        <h2>Welcome Guest!</h2>
+
+        <p>Please log in to access your account.</p>
+
+        <a href="<?= BASE_PATH ?>/login">Login</a>
+
+        <br><br>
+
+        <a href="<?= BASE_PATH ?>/register">Register</a>
+
+    <?php endif; ?>
 
 </body>
 </html>
