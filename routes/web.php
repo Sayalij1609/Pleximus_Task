@@ -20,3 +20,8 @@ $router->get('/dashboard', [DashboardController::class, 'index']);
 // Add Student
 $router->get('/students/create', [StudentController::class, 'create']);
 $router->post('/students', [StudentController::class, 'store']);
+
+
+// Student routes
+$router->get('/students', [StudentController::class, 'index']);
+$router->get('/students/show', [StudentController::class, 'show']);

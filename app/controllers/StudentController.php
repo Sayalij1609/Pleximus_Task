@@ -159,4 +159,43 @@ class StudentController
 
         require __DIR__ . '/../views/students/create.php';
     }
+
+    
+    // Display all students.
+    public function index()
+    {
+        AuthMiddleware::handle();
+
+        $userId = $_SESSION['user_id'];
+
+        $students = $this->studentModel->getAllByUser($userId);
+
+        require __DIR__ . '/../views/students/index.php';
+    }
+
+
+    // Display details of a particular student.
+    public function show()
+    {
+        AuthMiddleware::handle();
+
+        $userId = $_SESSION['user_id'];
+
+        $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+
+        if (!$id || $id < 1) {
+            http_response_code(404);
+            exit("Student not found.");
+        }
+
+        $student = $this->studentModel->findById($id, $userId);
+
+        if (!$student) {
+            http_response_code(404);
+            exit("Student not found.");
+        }
+
+        require __DIR__ . '/../views/students/show.php';
+    }
+
 }

@@ -58,4 +58,41 @@ class Student
             ':address' => $data['address']
         ]);
     }
+
+    
+    // Fetch all students belonging to a particular user.
+    public function getAllByUser($userId)
+    {
+        $query = "SELECT * FROM {$this->table}
+                WHERE user_id = :user_id
+                ORDER BY created_at DESC";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->execute([
+            ':user_id' => $userId
+        ]);
+
+        return $stmt->fetchAll();
+    }
+
+
+    // Fetch one student using student ID and user ID.
+    public function findById($id, $userId)
+    {
+        $query = "SELECT * FROM {$this->table}
+                WHERE id = :id
+                AND user_id = :user_id
+                LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->execute([
+            ':id' => $id,
+            ':user_id' => $userId
+        ]);
+
+        return $stmt->fetch();
+    }
+
 }
