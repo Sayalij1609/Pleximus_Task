@@ -149,8 +149,78 @@ class Student
         return $stmt->rowCount() > 0;
     }
 
+    
+    public function getPaginatedByUser($userId, $search, $limit, $offset)
+    {
+        $query = "SELECT * FROM {$this->table}
+                WHERE user_id = :user_id";
 
+        if ($search !== '') {
+            $query .= " AND (
+                roll_number LIKE :search
+                OR first_name LIKE :search
+                OR last_name LIKE :search
+                OR email LIKE :search
+                OR course LIKE :search
+            )";
+        }
 
+        $query .= " ORDER BY created_at DESC
+                    LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+
+        if ($search !== '') {
+            $stmt->bindValue(
+                ':search',
+                '%' . $search . '%',
+                PDO::PARAM_STR
+            );
+        }
+
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    
+    public function countByUser($userId, $search)
+    {
+        $query = "SELECT COUNT(*) AS total
+                FROM {$this->table}
+                WHERE user_id = :user_id";
+
+        if ($search !== '') {
+            $query .= " AND (
+                roll_number LIKE :search
+                OR first_name LIKE :search
+                OR last_name LIKE :search
+                OR email LIKE :search
+                OR course LIKE :search
+            )";
+        }
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+
+        if ($search !== '') {
+            $stmt->bindValue(
+                ':search',
+                '%' . $search . '%',
+                PDO::PARAM_STR
+            );
+        }
+
+        $stmt->execute();
+
+        return (int)$stmt->fetchColumn();
+    }
 
 
 }

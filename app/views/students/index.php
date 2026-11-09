@@ -12,9 +12,12 @@ function studentListEscape($value)
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>All Students</title>
 
@@ -28,7 +31,9 @@ function studentListEscape($value)
 
 <div class="container py-5">
 
+    <!-- Page Heading -->
     <div class="d-flex justify-content-between align-items-center mb-4">
+
         <div>
             <h2>All Students</h2>
             <p class="text-muted mb-0">
@@ -36,31 +41,77 @@ function studentListEscape($value)
             </p>
         </div>
 
-        <a
-            href="<?= BASE_PATH ?>/students/create"
-            class="btn btn-primary"
-        >
+        <a href="<?= BASE_PATH ?>/students/create"
+           class="btn btn-primary">
             + Add Student
         </a>
+
     </div>
 
+
     <div class="card shadow-sm">
+
         <div class="card-body">
 
+            <!-- Search Form -->
+            <form method="GET"
+                  action="<?= BASE_PATH ?>/students"
+                  class="row g-2 mb-4">
+
+                <div class="col-md-8">
+
+                    <input
+                        type="text"
+                        name="search"
+                        class="form-control"
+                        placeholder="Search by roll number, name, email or course..."
+                        value="<?= studentListEscape($search) ?>"
+                    >
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Search
+                    </button>
+
+                    <a href="<?= BASE_PATH ?>/students"
+                       class="btn btn-secondary">
+                        Reset
+                    </a>
+
+                </div>
+
+            </form>
+
+
+            <!-- Student Count -->
+            <div class="mb-3">
+
+                <strong>Total matching students:</strong>
+                <?= (int)$totalStudents ?>
+
+            </div>
+
+
+            <!-- Student Table -->
             <?php if (empty($students)): ?>
 
                 <div class="text-center py-5">
+
                     <h5>No students found</h5>
+
                     <p class="text-muted">
-                        Start by adding your first student.
+                        Try another search or add a new student.
                     </p>
 
-                    <a
-                        href="<?= BASE_PATH ?>/students/create"
-                        class="btn btn-primary"
-                    >
+                    <a href="<?= BASE_PATH ?>/students/create"
+                       class="btn btn-primary">
                         Add Student
                     </a>
+
                 </div>
 
             <?php else: ?>
@@ -70,6 +121,7 @@ function studentListEscape($value)
                     <table class="table table-bordered table-hover align-middle">
 
                         <thead class="table-dark">
+
                             <tr>
                                 <th>Roll Number</th>
                                 <th>Student Name</th>
@@ -77,8 +129,9 @@ function studentListEscape($value)
                                 <th>Phone</th>
                                 <th>Course</th>
                                 <th>Year</th>
-                                <th>Action</th>
+                                <th>Actions</th>
                             </tr>
+
                         </thead>
 
                         <tbody>
@@ -86,6 +139,7 @@ function studentListEscape($value)
                             <?php foreach ($students as $student): ?>
 
                                 <tr>
+
                                     <td>
                                         <?= studentListEscape($student['roll_number']) ?>
                                     </td>
@@ -112,7 +166,9 @@ function studentListEscape($value)
                                     <td>
                                         <?= studentListEscape($student['year']) ?>
                                     </td>
+
                                     <td>
+
                                         <div class="d-flex gap-2">
 
                                             <a
@@ -134,6 +190,7 @@ function studentListEscape($value)
                                                 method="POST"
                                                 onsubmit="return confirm('Are you sure you want to delete this student?');"
                                             >
+
                                                 <input
                                                     type="hidden"
                                                     name="id"
@@ -146,12 +203,17 @@ function studentListEscape($value)
                                                     value="<?= studentListEscape($csrfToken) ?>"
                                                 >
 
-                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-sm btn-danger"
+                                                >
                                                     Delete
                                                 </button>
+
                                             </form>
 
                                         </div>
+
                                     </td>
 
                                 </tr>
@@ -164,16 +226,72 @@ function studentListEscape($value)
 
                 </div>
 
+
+                <!-- Pagination -->
+                <?php if ($totalPages > 1): ?>
+
+                    <nav aria-label="Student pagination">
+
+                        <ul class="pagination justify-content-center">
+
+                            <!-- Previous -->
+                            <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
+
+                                <a
+                                    class="page-link"
+                                    href="<?= BASE_PATH ?>/students?<?= http_build_query(['search' => $search, 'page' => max(1, $page - 1)]) ?>"
+                                >
+                                    Previous
+                                </a>
+
+                            </li>
+
+
+                            <!-- Page Numbers -->
+                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+
+                                <li class="page-item <?= $page == $i ? 'active' : '' ?>">
+
+                                    <a
+                                        class="page-link"
+                                        href="<?= BASE_PATH ?>/students?<?= http_build_query(['search' => $search, 'page' => $i]) ?>"
+                                    >
+                                        <?= $i ?>
+                                    </a>
+
+                                </li>
+
+                            <?php endfor; ?>
+
+
+                            <!-- Next -->
+                            <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
+
+                                <a
+                                    class="page-link"
+                                    href="<?= BASE_PATH ?>/students?<?= http_build_query(['search' => $search, 'page' => min($totalPages, $page + 1)]) ?>"
+                                >
+                                    Next
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </nav>
+
+                <?php endif; ?>
+
             <?php endif; ?>
 
-            <a
-                href="<?= BASE_PATH ?>/dashboard"
-                class="btn btn-secondary mt-3"
-            >
+
+            <a href="<?= BASE_PATH ?>/dashboard"
+               class="btn btn-secondary mt-3">
                 Back to Dashboard
             </a>
 
         </div>
+
     </div>
 
 </div>

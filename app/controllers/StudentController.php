@@ -162,18 +162,59 @@ class StudentController
 
     
     // Display all students.
+    
     public function index()
     {
         AuthMiddleware::handle();
 
         $userId = $_SESSION['user_id'];
 
-        $students = $this->studentModel->getAllByUser($userId);
+        // Get search keyword.
+        $search = trim($_GET['search'] ?? '');
+
+        // Number of records per page.
+        $limit = 5;
+
+        // Get current page.
+        $page = filter_var(
+            $_GET['page'] ?? 1,
+            FILTER_VALIDATE_INT
+        );
+
+        if (!$page || $page < 1) {
+            $page = 1;
+        }
+
+        // Count matching records.
+        $totalStudents = $this->studentModel->countByUser(
+            $userId,
+            $search
+        );
+
+        // Calculate total pages.
+        $totalPages = (int)ceil($totalStudents / $limit);
+
+        // Prevent requesting a page beyond the available range.
+        if ($totalPages > 0 && $page > $totalPages) {
+            $page = $totalPages;
+        }
+
+        // Calculate SQL offset.
+        $offset = ($page - 1) * $limit;
+
+        // Fetch students for the current page.
+        $students = $this->studentModel->getPaginatedByUser(
+            $userId,
+            $search,
+            $limit,
+            $offset
+        );
 
         $csrfToken = $this->csrfToken();
 
         require __DIR__ . '/../views/students/index.php';
     }
+
 
 
     // Display details of a particular student.
